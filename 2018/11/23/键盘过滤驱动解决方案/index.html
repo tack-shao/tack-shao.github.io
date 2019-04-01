@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>键盘过滤驱动解决方案 | Tack&#39;s coding vlog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="键盘过滤驱动解决方案  需求 思路 整体方案 总结    需求分析上篇文章说到我开发完蓝牙鼠标驱动过滤之后，产品那边接下来理所当然的就会让我开始蓝牙键盘过滤了。键盘的过滤也是主要完成两部分，一是键盘设备的识别，二是键盘特殊键事件的拦截。 思路思路大致与鼠标事件拦截和识别一致。    1、首先识别键盘hid句柄的handle，保存起来作为一个特征识别码。  2、使用win32 api中的getraw">
+<meta property="og:type" content="article">
+<meta property="og:title" content="键盘过滤驱动解决方案">
+<meta property="og:url" content="http://yoursite.com/2018/11/23/键盘过滤驱动解决方案/index.html">
+<meta property="og:site_name" content="Tack&#39;s coding vlog">
+<meta property="og:description" content="键盘过滤驱动解决方案  需求 思路 整体方案 总结    需求分析上篇文章说到我开发完蓝牙鼠标驱动过滤之后，产品那边接下来理所当然的就会让我开始蓝牙键盘过滤了。键盘的过滤也是主要完成两部分，一是键盘设备的识别，二是键盘特殊键事件的拦截。 思路思路大致与鼠标事件拦截和识别一致。    1、首先识别键盘hid句柄的handle，保存起来作为一个特征识别码。  2、使用win32 api中的getraw">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-04-01T07:36:38.664Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="键盘过滤驱动解决方案">
+<meta name="twitter:description" content="键盘过滤驱动解决方案  需求 思路 整体方案 总结    需求分析上篇文章说到我开发完蓝牙鼠标驱动过滤之后，产品那边接下来理所当然的就会让我开始蓝牙键盘过滤了。键盘的过滤也是主要完成两部分，一是键盘设备的识别，二是键盘特殊键事件的拦截。 思路思路大致与鼠标事件拦截和识别一致。    1、首先识别键盘hid句柄的handle，保存起来作为一个特征识别码。  2、使用win32 api中的getraw">
+  
+    <link rel="alternate" href="/atom.xml" title="Tack&#39;s coding vlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Tack&#39;s coding vlog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-键盘过滤驱动解决方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/23/键盘过滤驱动解决方案/" class="article-date">
+  <time datetime="2018-11-23T06:47:18.000Z" itemprop="datePublished">2018-11-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      键盘过滤驱动解决方案
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="键盘过滤驱动解决方案"><a href="#键盘过滤驱动解决方案" class="headerlink" title="键盘过滤驱动解决方案"></a>键盘过滤驱动解决方案</h2><hr>
+<ul>
+<li><strong>需求</strong></li>
+<li><strong>思路</strong></li>
+<li><strong>整体方案</strong></li>
+<li><strong>总结</strong> </li>
+</ul>
+<hr>
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><p>上篇文章说到我开发完蓝牙鼠标驱动过滤之后，产品那边接下来理所当然的就会让我开始蓝牙键盘过滤了。键盘的过滤也是主要完成两部分，一是键盘设备的识别，二是键盘特殊键事件的拦截。</p>
+<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>思路大致与鼠标事件拦截和识别一致。  </p>
+<ul>
+<li><p>1、首先识别键盘hid句柄的handle，保存起来作为一个特征识别码。</p>
+</li>
+<li><p>2、使用win32 api中的getrawinputdata获取实时输入消息，解析消息知道，里面包含hid handle，看是否与我们需要的hid匹配，匹配则恭喜，不匹配就gg了。（悲剧的是雷柏的键盘gg了，by the way，罗技的是可以匹配hid的，他们具体怎么实现，我猜测是固件端的事情了）</p>
+</li>
+<li><p>3、通过设置全局键盘钩子，拦截键盘事件（这个好解决），拦截到事件之后，获取数据缓冲区的输入消息，解析handle是否为我们所需要的键盘，是这拦截事件并且发送信号给功能模块。不是则不拦截。</p>
+</li>
+</ul>
+<h3 id="整体方案"><a href="#整体方案" class="headerlink" title="整体方案"></a>整体方案</h3><p>整体方案的实现，其实说白了就是封装一个拦截模块，用于识别我们的设备的事件并拦截下来，发送相应的信号给另一个模块。<br>这个拦截模块包括2.4g和蓝牙（仅支持4.0，原因很狗血，因为雷柏的设备在3.0的时候是不能识别硬件地址特征码的，罗技的可以！！）。<br>模块首先包括启动和停止：<br>程序在某个地方可以随机启动拦截模块，也可以随机关闭拦截模块。</p>
+<pre><code>/**
+ * @brief The RapooMouseHandler class
+ * 封装蓝牙鼠标的相关通信
+ * 封装hid相关的数据读取
+ * PS:
+ *  BLE通信之前都必须枚举设备、服务、特征、判断是否可以通信
+ *  目前支持的操作
+ *      1、切换设备changeDevice（实现切换蓝牙连接鼠标设备
+ *
+ * 2018 10 25 11:48
+ * 同时封装了全局鼠标钩子
+ *
+ * 2018 11 20 16:03
+ * 添加支持键盘，并且整理代码
+ */
+class RapooHandler : public QObject
+{
+    Q_OBJECT
+public:
+    RapooHandler(QObject* parent = 0);
+    ~RapooHandler();
+
+#ifdef USE_BLE_DLL
+    /**
+     * @brief changeDevice 切换设备使用的，但是目前先不使用
+     * @param device
+     * @return
+     */
+    int changeDevice(int device);
+#endif
+    /**
+     * @brief getDoMouseEventTask 获取鼠标事件监听线程指针
+     * @return
+     */
+    DoMouseEventTask* getDoMouseEventTask();
+    /**
+     * @brief getHidCtrl 获取HID对象指针
+     * @return
+     */
+    HidCtrl* getHidCtrl();
+
+    /*提供前端接口实现，检查设备连接状态*/
+    Q_INVOKABLE QVariantMap checkHidDeviceConnected();
+
+signals:
+    /**
+     * @brief sig_MouseEvent 过滤鼠标事件信号
+     * @param key 键值宏 见value.h头文件
+     * @param bIsUp 是否松开
+     */
+    void sig_KeyEvent(int key, int nIsUp);
+    /**
+     * @brief sig_HidDeviceConnected hid设备连接
+     * @param int 1表示连接 0表示断开
+     */
+    void sig_HidDeviceConnected(int);
+public slots:
+    /**
+     * @brief slot_changeFilterKey 用于接收修改过滤的键值
+     * @param qsKeys
+     */
+    void slot_changeFilterKey(QStringList qsKeys);
+    /**
+     * @brief slot_recvMouseEvent 用于接受鼠标信号
+     * @param key
+     * @param nIsUp
+     */
+    void slot_recvMouseEvent(int key, int nIsUp);
+    /**
+     * @brief HidDeviceConnectionSlot HID设备连接槽函数
+     * @param state true为连接 false为断开连接
+     * @param qsDevicePath 设备路径
+     */
+    void HidDeviceConnectionSlot(bool state, QString qsDevicePath);
+private:
+    HidCtrl*                    m_pHidCtrl = NULL;          //HID控制器
+    BthCtrl*                    m_pBthCtrl = NULL;          //蓝牙控制器
+    UsbDriver*                  m_pUsbDriver = NULL;        //USB驱动
+    HidDeviceHotSwapEvent*      m_pHidDevHSEvnt = NULL;     //HID设备热拔插事件
+    DoMouseEventTask*           m_pDoMouseEventTask = NULL; //鼠标事件监听器
+    bool                        m_bLoadedBLEDll = false;
+    DeviceConnectStatus         m_connectStatus;
+    QStringList                 m_qslFilterKeys;            //存放过滤的键值
+#ifdef USE_BLE_DLL
+    InitBLE_Interface m_initBLE = 0;
+    DestroyBLE_Interface m_destroyBLE = 0;
+    SendChangeDeviceMsg_Interface m_sendChangeDeviceMsg = 0;
+    FindHidAddrWithNameCut_Interface m_findHidAddrWithNameCut = 0;
+    GetRapooBleStatus_Interface m_getRapooBleStatus = 0;
+#endif
+private:
+    void destroyUsbDriver();
+    /**
+     * @brief enumAndSetOurDevice 枚举HID，查看是否有符合我们的设备
+     * @return map 返回设备连接状态
+     */
+    QVariantMap enumAndSetOurDevice();
+
+    /**
+     * @brief findRapooBthHidDeviceFromSystem 查找蓝牙设备
+     * @param miceMap
+     * @return 返回0表表示没找到，返回1表示只有鼠标 返回2表示只有键盘，返回3表示都有
+     */
+    int findRapooBthHidDeviceFromSystem(QMap&lt;wstring, DeviceStruct&gt;&amp; miceMap);
+
+    /**
+     * @brief findRapooUsbHidDeviceFromSystem 查找2.4g设备
+     * @param miceMap
+     * @return 返回0表表示没找到，返回1表示只有鼠标 返回2表示只有键盘，返回3表示都有
+     */
+    int findRapooUsbHidDeviceFromSystem(QMap&lt;wstring, DeviceStruct&gt;&amp; miceMap);
+
+#ifdef USE_BLE_DLL
+    /**
+     * @brief loadDllAndFunction 加载DLL和读取接口
+     * @param path
+     */
+    int loadDllAndInterface();
+#endif
+};
+</code></pre><p>以上为拦截模块的封装，实现就不提供了（毕竟涉及商业）；<br>简单来说，该模块的启动和关闭，基本就是在构造函数和析构函数中实现了，其他模块只要使用指针操作就能随意使用此模块，比如：<br>我们在main文件中启动了该模块：</p>
+<pre><code>RapooHandler rapooHandler;                      // 鼠标处理程序
+//连接鼠标事件监听线程发出的信号和功能中心的槽
+QObject::connect(&amp;rapooHandler, &amp;RapooHandler::sig_KeyEvent,
+                 &amp;mouseFunctionSenter, &amp;MouseFunctionSenter::slot_MouseEvent);
+</code></pre><p>使用信号槽连接了功能实现模块。<br>功能实现模块无关拦截，所以在这里就不一一赘述了。<br>当然要完全实现这个模块肯定还需很多复杂的操作。<br>下面在看看全局钩子的实现：</p>
+<pre><code>/**
+ * @brief The KeyboardHook class
+ * 键盘钩子
+ */
+class KeyboardHook
+{
+public:
+    KeyboardHook(HOOKPROC proc);
+    ~KeyboardHook();
+    /**
+     * @brief getKeyboardHookHandle 获取键盘钩子句柄
+     * @return
+     */
+    HHOOK getKeyboardHookHandle();
+
+    /**
+     * @brief initializeHook 初始化钩子，代码
+     * @return  成功返回1 失败返回0
+     */
+    int initializeHook();
+
+
+    /**
+     * @brief removeHook 移除钩子
+     * @return 成功返回1 失败返回0
+     */
+    int removeHook();
+
+    bool isHookStart();
+
+private:
+    HWND m_hWnd = 0;
+    HOOKPROC m_pHOOKPROC = 0;
+    int m_nHookState = 0; //钩子状态，0位关闭，1位启动
+    int m_nHookType = 0; //钩子类型，1表示代码 0表示dll注入
+    static HHOOK s_hKeyboardHook; //键盘钩子句柄
+};
+</code></pre><p>通过initializeHook()和removeHook()在启动和关闭钩子，初始化的时候，传入钩子响应函数HOOKPROC proc作为参数。</p>
+<p>实现了拦截模块的难点 <strong>在于如何平衡raw input和钩子事件哪个先触发</strong><br>在windows系统中，全局钩子拦截到的事件和raw input的输入消息的到达顺序是随机的，你不知道哪个先哪个后，然后我们要知道哪个事件属于我们的设备还要拦截它就是需要平衡这两者的顺序。<br><strong>解决方法</strong><br>维护一个raw input data队列，创建窗口响应函数读取raw input data，保存到队列中；在等待钩子钩到事件之后；先判断队列中有没有可用消息，有则进而判断消息的时间是否太长，我们决定100ms作为等待时间，超过这个时间的消息都算超时，抛弃；假如队列中没有消息，那么进而读取raw input data，判断data的handle是否为我们所需要，是则拦截，不是则不拦截。<br><strong>键盘拦截中需要注意</strong><br>键盘操作都包括按下 抬起两个动作，假如我们拦截了按下，但是漏掉了抬起，那么这个敲击事件就一直处于按下状态，相当于长按，这不是我们想要。如何解决这个问题呢。我们决定不需要键盘的按下消息，只需要抬起消息，（这和鼠标有点不大一样），一般人在拦截键盘改键功能的时候也不会有长按键盘的场景，就算有也可以通过其他方式实现。所以这个只需要拦截和识别抬起消息即可，难度大大降低，也大大增加稳定性。  </p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>键盘拦截模块和鼠标拦截大同小异，细节方面有诸多问题要注意。基本上应用层拦截的可行性是ok的，但是前提条件是键盘设备能够被识别，即硬件特征地址码能够被识别和匹配。在这点上因为雷柏的键盘拦截功能键位是在特殊媒体键，然而雷柏键盘的媒体键识别的时候是没有handle的，亲测罗技的有，估计罗技的固件做了某种处理，所以此方案在雷柏键盘上并不能达到需求。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/23/键盘过滤驱动解决方案/" data-id="cjty25jia0003vc8wxqu54rvn" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/24/键鼠宏的思考/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          键鼠宏的思考
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/01/蓝牙鼠标驱动开发总结/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">蓝牙鼠标驱动开发总结</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/24/键鼠宏的思考/">键鼠宏的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/23/键盘过滤驱动解决方案/">键盘过滤驱动解决方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/蓝牙鼠标驱动开发总结/">蓝牙鼠标驱动开发总结</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/11/AStar寻路算法研究，运用于agv寻路/">AStar寻路算法研究，运用于agv寻路</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Tack Shao<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

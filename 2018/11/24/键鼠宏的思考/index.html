@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>键鼠宏的思考 | Tack&#39;s coding vlog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="键鼠宏的思考 键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。办公驱动过滤方案目前使用的是原始输入和钩子配合获取输入消息，改键部分中使用到模拟键盘和模拟鼠标的api还有其他操作。宏的实现主要分为两个部分，宏录制和宏播放。   宏录制用户进入录制模式后，程序后台开始停止输入消息拦截和改键，只留监听用户输入的部分。所以录制也是重点，但是其实说白了就是录下用户特定时期内输入的输入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="键鼠宏的思考">
+<meta property="og:url" content="http://yoursite.com/2018/11/24/键鼠宏的思考/index.html">
+<meta property="og:site_name" content="Tack&#39;s coding vlog">
+<meta property="og:description" content="键鼠宏的思考 键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。办公驱动过滤方案目前使用的是原始输入和钩子配合获取输入消息，改键部分中使用到模拟键盘和模拟鼠标的api还有其他操作。宏的实现主要分为两个部分，宏录制和宏播放。   宏录制用户进入录制模式后，程序后台开始停止输入消息拦截和改键，只留监听用户输入的部分。所以录制也是重点，但是其实说白了就是录下用户特定时期内输入的输入">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-04-01T06:46:55.532Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="键鼠宏的思考">
+<meta name="twitter:description" content="键鼠宏的思考 键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。办公驱动过滤方案目前使用的是原始输入和钩子配合获取输入消息，改键部分中使用到模拟键盘和模拟鼠标的api还有其他操作。宏的实现主要分为两个部分，宏录制和宏播放。   宏录制用户进入录制模式后，程序后台开始停止输入消息拦截和改键，只留监听用户输入的部分。所以录制也是重点，但是其实说白了就是录下用户特定时期内输入的输入">
+  
+    <link rel="alternate" href="/atom.xml" title="Tack&#39;s coding vlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Tack&#39;s coding vlog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-键鼠宏的思考" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/24/键鼠宏的思考/" class="article-date">
+  <time datetime="2018-11-24T06:43:10.000Z" itemprop="datePublished">2018-11-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      键鼠宏的思考
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="键鼠宏的思考"><a href="#键鼠宏的思考" class="headerlink" title="键鼠宏的思考"></a>键鼠宏的思考</h2><hr>
+<h3 id="键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。"><a href="#键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。" class="headerlink" title="键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。"></a>键鼠宏的功能和使用场景就不再赘述，这里主要考虑办公驱动需要的宏实现方案。</h3><p>办公驱动过滤方案目前使用的是原始输入和钩子配合获取输入消息，改键部分中使用到模拟键盘和模拟鼠标的api还有其他操作。<br>宏的实现主要分为两个部分，宏录制和宏播放。</p>
+<hr>
+<ul>
+<li>宏录制<br>用户进入录制模式后，程序后台开始停止输入消息拦截和改键，只留监听用户输入的部分。所以录制也是重点，但是其实说白了就是录下用户特定时期<br>内输入的输入消息。游戏鼠标驱动的宏是我们公司主推的热点，所以宏的要求比较高（虽然宏播放的实现十分只简单，由于游戏鼠标的特性）目前也是<br>经过用户和市场的考量，所以也列入我的考量范围之内。具体实现方法就是在用户进入录制窗口之后，重载鼠标按下、松开消息和滚轮消息捕获键值。<br>这个简单方式确实符合目前的使用场景，但是虽然捕获了键值消息，事件有没有拦截我暂时还清楚，这个需要确认。</li>
+</ul>
+<hr>
+<ul>
+<li>宏播放<br>宏播放说白了就是执行用户之前录制的键鼠消息，可以通过模拟键盘和模拟鼠标api实现，简单。当然还要录制消息之间的时间间隔，所以会形成一个<br>宏消息队列的规范，这个我司内部有，json格式的，其实也是很简单的一些属性的封装而已。但是，这其中有个重点问题：宏播放中断<br>宏播放中断，就是可以随时中断某个正在播放的宏（宏的时长可能很长），简单来说，在一种场景中必须要这个功能。连续启动宏之后，最后一次启动开始<br>会执行完，之前的宏都会在下一次启动的时候停止。<br>也就是说，宏的播放可能需要参考一下视频或者音频播放的机制。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/24/键鼠宏的思考/" data-id="cjty25jhz0001vc8w9rhgs3yo" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/11/23/键盘过滤驱动解决方案/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">键盘过滤驱动解决方案</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/24/键鼠宏的思考/">键鼠宏的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/23/键盘过滤驱动解决方案/">键盘过滤驱动解决方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/蓝牙鼠标驱动开发总结/">蓝牙鼠标驱动开发总结</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/11/AStar寻路算法研究，运用于agv寻路/">AStar寻路算法研究，运用于agv寻路</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Tack Shao<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

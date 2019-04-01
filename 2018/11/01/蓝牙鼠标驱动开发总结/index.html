@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>蓝牙鼠标驱动开发总结 | Tack&#39;s coding vlog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="windows平台 蓝牙鼠标过滤大纲 需求分析 思路 总结   需求分析来到雷柏的首次重要项目，内容是模仿罗技mxmaster鼠标驱动编写相关的鼠标驱动，我负责的内容是实现支持蓝牙的功能。需求简单分析就知道就是从电脑总线中识别出雷柏公司的蓝牙鼠标产品，并能过滤出该鼠标的鼠标事件，并且能够根据用户编辑的改键信息执行改键操作   思路实现该项目的重点主要分为两大模块  实现从总线上识别我们的鼠标 过滤">
+<meta property="og:type" content="article">
+<meta property="og:title" content="蓝牙鼠标驱动开发总结">
+<meta property="og:url" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/index.html">
+<meta property="og:site_name" content="Tack&#39;s coding vlog">
+<meta property="og:description" content="windows平台 蓝牙鼠标过滤大纲 需求分析 思路 总结   需求分析来到雷柏的首次重要项目，内容是模仿罗技mxmaster鼠标驱动编写相关的鼠标驱动，我负责的内容是实现支持蓝牙的功能。需求简单分析就知道就是从电脑总线中识别出雷柏公司的蓝牙鼠标产品，并能过滤出该鼠标的鼠标事件，并且能够根据用户编辑的改键信息执行改键操作   思路实现该项目的重点主要分为两大模块  实现从总线上识别我们的鼠标 过滤">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/1.png">
+<meta property="og:image" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/2.png">
+<meta property="og:image" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/3.png">
+<meta property="og:image" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/4.png">
+<meta property="og:updated_time" content="2019-04-01T07:51:15.360Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="蓝牙鼠标驱动开发总结">
+<meta name="twitter:description" content="windows平台 蓝牙鼠标过滤大纲 需求分析 思路 总结   需求分析来到雷柏的首次重要项目，内容是模仿罗技mxmaster鼠标驱动编写相关的鼠标驱动，我负责的内容是实现支持蓝牙的功能。需求简单分析就知道就是从电脑总线中识别出雷柏公司的蓝牙鼠标产品，并能过滤出该鼠标的鼠标事件，并且能够根据用户编辑的改键信息执行改键操作   思路实现该项目的重点主要分为两大模块  实现从总线上识别我们的鼠标 过滤">
+<meta name="twitter:image" content="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Tack&#39;s coding vlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Tack&#39;s coding vlog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-蓝牙鼠标驱动开发总结" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/01/蓝牙鼠标驱动开发总结/" class="article-date">
+  <time datetime="2018-11-01T07:39:01.000Z" itemprop="datePublished">2018-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      蓝牙鼠标驱动开发总结
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="windows平台-蓝牙鼠标过滤"><a href="#windows平台-蓝牙鼠标过滤" class="headerlink" title="windows平台 蓝牙鼠标过滤"></a>windows平台 蓝牙鼠标过滤</h1><h2 id="大纲"><a href="#大纲" class="headerlink" title="大纲"></a>大纲</h2><ul>
+<li>需求分析</li>
+<li>思路</li>
+<li>总结</li>
+</ul>
+<hr>
+<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><p><em>来到雷柏的首次重要项目，内容是模仿罗技mxmaster鼠标驱动编写相关的鼠标驱动，我负责的内容是实现支持蓝牙的功能。需求简单分析就知道就是从电脑总线中识别出雷柏公司的蓝牙鼠标产品，并能过滤出该鼠标的鼠标事件，并且能够根据用户编辑的改键信息执行改键操作</em>  </p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p><em>实现该项目的重点主要分为两大模块</em></p>
+<ul>
+<li>实现从总线上识别我们的鼠标</li>
+<li>过滤我们鼠标的事件。</li>
+</ul>
+<hr>
+<h3 id="蓝牙识别"><a href="#蓝牙识别" class="headerlink" title="蓝牙识别"></a>蓝牙识别</h3><p>识别的实现主要使用蓝牙名，例如Rapoo，遍历蓝牙设备<br>基本操作就是使用SetupDiGetClassDevs (windows api)枚举蓝牙设备，注意参数GUID_DEVCLASS_BLUETOOTH 它在devguid.h头文件中，这里枚举到的蓝牙设备仅仅是已配对的设备，当然里面包括了已连接的设备，比如下图所以接下来我们还有操作。先看代码<br>代码如下:</p>
+<pre><code>SP\_DEVINFO\_DATA did;  
+DWORD i;  
+
+//获取蓝牙相关设备集合  
+HDEVINFO hDI = SetupDiGetClassDevs(&amp;GUID\_DEVCLASS\_BLUETOOTH, NULL, NULL,DIGCF_PRESENT);  
+if (INVALID\_HANDLE\_VALUE == hDI)  
+{  
+     qDebug() &lt;&lt; u8&quot;INVALID\_HANDLE\_VALUE == hDI&quot;;  
+     return 0;  
+}  
+did.cbSize = sizeof(SP\_DEVINFO\_DATA);  
+for (i = 0; SetupDiEnumDeviceInfo(hDI, i, &amp;did); i++)  
+{  
+     //读取设备名称、硬件ID、实例路径  
+     wstring name = getDeviceRegistryStringProperty(hDI, did, SPDRP_FRIENDLYNAME);  
+     wstring hwId = getDeviceRegistryStringProperty(hDI, did, SPDRP_HARDWAREID);  
+     wstring service = getDeviceRegistryStringProperty(hDI, did, SPDRP_SERVICE);  
+
+     wstring deviceInstanceId;  
+     DWORD bufferSize = 0;  
+     while (!SetupDiGetDeviceInstanceId(  
+             hDI,  
+             &amp;did,  
+             &amp;deviceInstanceId\[0\],  
+             bufferSize,  
+             &amp;bufferSize))  
+     {  
+         if (GetLastError() == ERROR\_INSUFFICIENT\_BUFFER)  
+            deviceInstanceId.resize(bufferSize);  
+         else  
+         break;  
+     }  
+
+     if (name.size() &gt; 0)  
+     {  
+         //名称不为空的设备才是我们需要的  
+         BthDeviceInfo *bthDeviceInfo = new BthDeviceInfo(rtrim\_null(name), rtrim\_null(hwId), rtrim_null(deviceInstanceId));  
+         m\_bthEnumeratedDevices.push\_back(bthDeviceInfo);  
+         qDebug() &lt;&lt; u8&quot;name :&quot; &lt;&lt; QString::fromStdWString(bthDeviceInfo-&gt;getName()) ;  
+         qDebug() &lt;&lt; u8&quot;HW id:&quot; &lt;&lt; QString::fromStdWString(bthDeviceInfo-&gt;getHardwareId()) ;  
+         qDebug() &lt;&lt; u8&quot;deviceInstanceId:&quot; &lt;&lt; QString::fromStdWString(bthDeviceInfo-&gt;getInstanceId()) ;  
+         qDebug() &lt;&lt; u8&quot;service:&quot; &lt;&lt; QString::fromStdWString(service) ;  
+     }  
+ }
+</code></pre><p>以上代码为枚举总线蓝牙设备，这里枚举到的蓝牙设备包括已配对的所有设备，所以可能出现同名的<br><img src="/2018/11/01/蓝牙鼠标驱动开发总结/1.png" alt><br>经过研究，知道蓝牙设备的地址为唯一的<br><img src="/2018/11/01/蓝牙鼠标驱动开发总结/2.png" alt><br>由上看出蓝牙4.0设备的实例路径前缀为BTHLE<br><img src="/2018/11/01/蓝牙鼠标驱动开发总结/3.png" alt>  </p>
+<h3 id="HID识别"><a href="#HID识别" class="headerlink" title="HID识别"></a>HID识别</h3><p>我们上面的操作可以都到所有配对的蓝牙的实例路径了，然后通过名称特征可以过滤出我们需要的蓝牙设备的实例路径<br>通过研究，我们发现实例路径里面某些特征就是我们蓝牙设备的唯一特征值，比如<br>RAPOO BT4.0 MS的特征地址为ED8E0EA5B6A9，然我们查找HID设备分支我们可以看到<br><img src="/2018/11/01/蓝牙鼠标驱动开发总结/4.png" alt><br>其中符合蓝牙低能耗GATT的HID设备为蓝牙4.0的，至于GATT是什么，我这个项目目前没有使用到所以不做赘述，蓝牙3.0的那个就是‘蓝牙HID设备’了。<br>这里的HID设备就是我们鼠标发生数据的来源了，关于HID识别的，我现阶段使用的是根据windows api raw input来识别，可能跟直接在设备管理器看到的设备信息有些出入，但是一切以rawinput能读到的信息为准。<br>获取原始输入数据有一个关键点，第一获取原始输入设备列表，第二获取原始输入消息。<br>获取原始输入设备列表使用GetRawInputDeviceList函数，具体可以查询MSDN，这里轻fuck一下MSDN。<br>代码如下:  </p>
+<pre><code>int WinManyMouseDriver::init()  
+ {  
+
+     RAWINPUTDEVICELIST *devlist = NULL;  
+     UINT ct = 0;  
+     UINT i;  
+
+     s_nAvailableMiceNum = 0;  
+
+     //获取原始输入设备数  
+     GetRawInputDeviceList(NULL, &amp;ct, sizeof (RAWINPUTDEVICELIST));  
+     if (ct == 0)  //无啊，啥都没  
+        return 0;  
+
+     //获取原始输入设备，注意：alloca函数牛逼，做到了在栈上申请动态内存，还能不用管释放  
+     devlist = (PRAWINPUTDEVICELIST) alloca(sizeof (RAWINPUTDEVICELIST) * ct);  
+     GetRawInputDeviceList(devlist, &amp;ct, sizeof (RAWINPUTDEVICELIST));  
+     for (i = 0; i &lt; ct; i++)  
+     {  
+        s_nAvailableMiceNum += InitSingleMice(&amp;devlist\[i\]);//鼠标名字 句柄 鼠标数统计  
+     }  
+
+     return s_nAvailableMiceNum;  
+}
+</code></pre><p>至此，获取到原始输入设备列表了，里面包括了各种输入设备，所以要做一些处理，过滤得到鼠标设备。<br>InitSingleMice()函数中就实现了初始化鼠标设备的操作。<br>判断输入设备不是鼠标，跳过   </p>
+<pre><code>if (dev-&gt;dwType != RIM_TYPEMOUSE)  
+ return 0;  ///不是鼠标，可能是键盘和其他啥的东西
+</code></pre><p>使用GetRawInputDeviceInfoA函数获取设备信息，详细请查看MSDN，再次轻喷。<br>获取到形如：  </p>
+<pre><code>\\\?\\HID#VID\_24AE&amp;PID\_1813&amp;MI_01&amp;Col01#9&amp;31d8bf8b&amp;0&amp;0000#{378de44c-56ef-11d1-bc8c-00a0c91405dd}
+</code></pre><p>的设备名，其中可以看到PID和VID，2.4g的鼠标是根据接收器的PID、VID识别的，此阶段的操作也适用于2.4g设备。但是经过研究发现目前通过此方法找不到蓝牙3.0 设备的地址特征。所以本文的蓝牙鼠标仅支持蓝牙4.0。支持的系统为win8 win10 但是2.4g的可以在win7下完美运行。  </p>
+<h3 id="过滤设备输入事件"><a href="#过滤设备输入事件" class="headerlink" title="过滤设备输入事件"></a>过滤设备输入事件</h3><p>上面捋清了识别特定蓝牙鼠标的思路，接下来我就要想办法实现拦截特定鼠标的鼠标事件了。<br>经过调研，也是上述windows api中的函数GetRawInputData() 可以读取原始输入消息，当然了这里读到的也是电脑的全部设备的输入消息。所以我要做一些过滤的处理： </p>
+<pre><code>if (raw-&gt;header.dwType != RIM_TYPEMOUSE)  
+ return 0; //不是鼠标类型的输入数据  
+</code></pre><p>接下来需要解析鼠标消息动作，因为我们只需要特殊的动作，比如点击和滑动滚轮。想鼠标移动这些我们就不需要了，起码这个项目里面不需要。废话不多说，直接看代码  </p>
+<pre><code>USHORT WinManyMouseDriver::parseMouseKeyValueFromMouse(const RAWMOUSE *mouse)  
+{  
+     //判断左键  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_1\_DOWN) {  
+        return MouseDriver\_KEY::MouseDriver\_L_DOWN;  
+     }  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_1\_UP) {  
+        return MouseDriver\_KEY::MouseDriver\_L_UP;  
+     }  
+     //判断右键  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_2\_DOWN) {  
+        return MouseDriver\_KEY::MouseDriver\_R_DOWN;  
+     }  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_2\_UP) {  
+        return MouseDriver\_KEY::MouseDriver\_R_UP;  
+     }  
+     //判断中键  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_3\_DOWN) {  
+        return MouseDriver\_KEY::MouseDriver\_M_DOWN;  
+     }  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_3\_UP) {  
+        return MouseDriver\_KEY::MouseDriver\_M_UP;  
+     }  
+     //判断前进键  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_5\_DOWN) {  
+        return MouseDriver\_KEY::MouseDriver\_F_DOWN;  
+     }  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_5\_UP) {  
+        return MouseDriver\_KEY::MouseDriver\_F_UP;  
+     }  
+     //判断后退键  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_4\_DOWN) {  
+        return MouseDriver\_KEY::MouseDriver\_B_DOWN;  
+     }  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_BUTTON\_4\_UP) {  
+         return MouseDriver\_KEY::MouseDriver\_B_UP;  
+     }  
+
+     //滚轮  
+     if (mouse-&gt;usButtonFlags &amp; RI\_MOUSE\_WHEEL)  
+     {  
+         if ((short)mouse-&gt;usButtonData &gt; 0)  
+            return MouseDriver\_KEY::MouseDriver\_WHEEL_UP;  
+         else if ((short)mouse-&gt;usButtonData &lt; 0)  
+            return MouseDriver\_KEY::MouseDriver\_WHEEL_DOWN;  
+         } /\* if */  
+         if (mouse-&gt;usButtonFlags &amp; 0x0800) /*侧滚轮，经调试得到*/  
+         {  
+             if ((short)mouse-&gt;usButtonData &gt; 0)  
+             return MouseDriver\_KEY::MouseDriver\_H\_WHEEL\_UP;  
+         else if ((short)mouse-&gt;usButtonData &lt; 0)  
+            return MouseDriver\_KEY::MouseDriver\_H\_WHEEL\_DOWN;  
+     }  
+     return 0;  
+}
+</code></pre><h4 id="按键消息的成对匹配"><a href="#按键消息的成对匹配" class="headerlink" title="按键消息的成对匹配"></a>按键消息的成对匹配</h4><p>我们知道，鼠标的按键消息（左键、右键、中键等）是分为按键和松开的，按一次就会有两个消息被拦截。这样我们就会面临一个棘手的问题。系统在合成一次鼠标按键事件时是需要成对的按下和松开响应的。所以我们要保证系统能够捕获成对的按下和抬起消息，并且需要按固定的顺序。因为我们这里使用了钩子，按键事件是被拦截的，不被拦截的事件就会交给系统，加入某次按键消息只拦截了按下，没拦截松开，系统就会捕获到松开，这是不允许的，反之亦然。所以我们需要做一些操作。  </p>
+<pre><code>int WinManyMouseDriver::FilterUnpairKey(int key, bool bIsUp)  
+{  
+     if (key &lt; MouseDriver\_L\_DOWN || key &gt; MouseDriver\_F\_UP) /*过滤滚轮*/  
+     return 1;  
+
+     if (bIsUp) /*松开键值*/  
+     {  
+         bool bFound = false;  
+         for (int item : m_nKeyQueue) //遍历键值队列  
+         {  
+             if (item + 1 == key) /*发现匹配的按下键值*/  
+             {  
+             m_nKeyQueue.removeOne(item);  
+             bFound = true;  
+             break;  
+             }  
+         }  
+         if (bFound) return 1;  
+         else  
+         {  
+             return 0;  
+         }  
+     }  
+     else  
+     {  
+         m\_nKeyQueue.push\_back(key);  
+            return 1;  
+     }  
+}
+</code></pre><p>上述代码可知，我们的解决方案就是，把按下的键值消息放入队列中，响应到松开消息时进行判断，如果找到匹配的按下消息，则拦截松开消息，找不到说明此次按键事件有问题，我们不拦截，抛弃。  </p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总的来说，这个项目历时一个月，经历了各种坎坷和惊喜。。。。。反正最终结果是好的。问候一下MSDN，对英语不好的国人来说很痛苦，而且就算看懂英语（我看英文的），给的信息也太少了。相比其他的官方文档简直弱爆了。个人从来没有打算在windows平台开发windows api相关的开发，深深不喜欢他的模式。再说一下罗技的，他的鼠标高级很多，很多操作是可以直接跟鼠标通信的，他的改键也是使用模拟按键，所以在该鼠标在游戏方面可能会存在失效。过滤鼠标事件这凡方面最好的方式就是在驱动层过滤，WDK编程暂时不想涉及，但是也做一点调研，所以我可以知道的是罗技MxMaster的驱动程序不是使用驱动级过滤，很可能实现方式也和我一样的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/" data-id="cjty25jia0002vc8wkwkmr9xz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/23/键盘过滤驱动解决方案/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          键盘过滤驱动解决方案
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/10/11/AStar寻路算法研究，运用于agv寻路/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">AStar寻路算法研究，运用于agv寻路</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/11/24/键鼠宏的思考/">键鼠宏的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/23/键盘过滤驱动解决方案/">键盘过滤驱动解决方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/蓝牙鼠标驱动开发总结/">蓝牙鼠标驱动开发总结</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/11/AStar寻路算法研究，运用于agv寻路/">AStar寻路算法研究，运用于agv寻路</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Tack Shao<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
