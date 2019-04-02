@@ -98,7 +98,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/11/24/键鼠宏的思考/" data-id="cjty25jhz0001vc8w9rhgs3yo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/24/键鼠宏的思考/" data-id="cjtzp9qxc0001ev8wwz6npdz2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -319,7 +319,7 @@ private:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/11/23/键盘过滤驱动解决方案/" data-id="cjty25jia0003vc8wxqu54rvn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/23/键盘过滤驱动解决方案/" data-id="cjtzp9qxt0004ev8wunj5e896" class="article-share-link">Share</a>
       
       
     </footer>
@@ -536,7 +536,365 @@ for (i = 0; SetupDiEnumDeviceInfo(hDI, i, &amp;did); i++)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/" data-id="cjty25jia0002vc8wkwkmr9xz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/11/01/蓝牙鼠标驱动开发总结/" data-id="cjtzp9qxs0003ev8w677b63i9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-代理ip池" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/02/代理ip池/" class="article-date">
+  <time datetime="2018-08-02T10:02:19.000Z" itemprop="datePublished">2018-08-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/02/代理ip池/">代理ip池</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="代理IP池开发与flask-api服务器搭建"><a href="#代理IP池开发与flask-api服务器搭建" class="headerlink" title="代理IP池开发与flask api服务器搭建"></a>代理IP池开发与flask api服务器搭建</h2><hr>
+<h3 id="代理IP池"><a href="#代理IP池" class="headerlink" title="代理IP池"></a>代理IP池</h3><ul>
+<li>为什么要开发代理IP池</li>
+<li>如何开发</li>
+<li>怎么使用</li>
+</ul>
+<hr>
+<h5 id="Why"><a href="#Why" class="headerlink" title="Why?"></a>Why?</h5><p>首先，我们做爬虫的都知道，挂代理是十分重要的反反爬虫的手段之一，所以代理ip成为爬虫的基本武器库。代理IP怎么来呢？可以买，但是作为穷逼的一员是不可能为了爬点漫画和视频去买东西的，话说我干嘛不直接买漫画或者视频。。。。总之，国内有很多代理Ip的网站都会发布一些免费ip，公开的，免费的东西肯定没有优质的啦，基本都被cut掉的了。但是所谓沙里淘金，n多免费ip中总有一点可靠的，所以免费的东西白用白不用，爬之。<br>ip来源有了，但是我们并不知道爬回来的ips何时被cut，不可能等我们正式用的时候才发现不能用，这不就尴尬了吗。所以需要开一条守护着线程在后台定时监测ip是否可用，不可用的删掉，然后判断ip数低于某个数值时就去爬取新的ip回来，当然新ip都是要检测通过再入库的。</p>
+<h5 id="How"><a href="#How" class="headerlink" title="How?"></a>How?</h5><p>HOW？？写一个代理ip池需要什么呢？首先肯定是要写个爬虫爬取免费ip网站的ip回来的嘛。免费ip网站有很多，而且网站样式都大同小异，所以我大胆的假设，它们可以使用一个通用的爬虫来爬取：<br>比如:<br><img src="/2018/08/02/代理ip池/1.jpg" alt></p>
+<h6 id="爬取"><a href="#爬取" class="headerlink" title="爬取"></a>爬取</h6><p>简单看来，这种表格的样式很简单就能爬去，只不过每个网站的数据排列可能顺序不同，比如上图的这个ip排在第一，port排在第二。 所以，只要把类型的位置以一个dict作为一个参数：  </p>
+<pre><code>ips = self.__get_by_url(url, {&quot;ip&quot;: 0, &quot;port&quot;: 1, &quot;address&quot;: 2, &quot;ip_type&quot;: 5})
+
+def __get_by_url(self, url, dict):
+    try:
+        r = requests.get(url, headers=self.headers, verify=True).content
+    except Exception as e:
+        ERROR(str(e))
+        return None
+
+    ip_list = []
+    selector = BeautifulSoup(r, &apos;lxml&apos;)
+    trs = selector.select(&quot;tr&quot;)
+
+    ip_list = []
+    if len(trs) &lt; 2:
+        return []
+    for tr in trs:
+        tds = tr.select(&apos;td&apos;)
+        ip = Ip()
+        for i in range(len(tds)):
+            if i == dict[&quot;ip&quot;]:
+                ip.ip = tds[i].get_text().strip()
+            if i == dict[&quot;port&quot;]:
+                ip.port = tds[i].get_text().strip()
+            if i == dict[&quot;address&quot;]:
+                ip.address = tds[i].get_text().strip()
+            if i == dict[&quot;ip_type&quot;]:
+                ip.ip_type = tds[i].get_text().strip()
+        ip_list.append(ip)
+    return ip_list
+</code></pre><p>是不是很简单？</p>
+<h6 id="检测"><a href="#检测" class="headerlink" title="检测"></a>检测</h6><p>ok。爬回数据之后，需要检测是否能用，检测同样简单，原理就是使用这个ip取访问一个网站，如果能行说明ip是ok的，否则反之。 </p>
+<pre><code>def validate_ip(ip):
+    # 验证ip是否可用
+    proxies = {&quot;http&quot;: &quot;http://%s:%s&quot; % (ip.ip, ip.port)}
+    headers = {
+        &apos;Accept&apos;: &apos;text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&apos;,
+        &apos;Accept-Language&apos;: &apos;en-US,en;q=0.5&apos;,
+        &apos;Connection&apos;: &apos;keep-alive&apos;,
+        &apos;Accept-Encoding&apos;: &apos;gzip, deflate&apos;,
+        &apos;User - Agent&apos;: &apos;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36&apos;,
+    }
+    res = False
+    try:
+        r = requests.get(url=&apos;http://www.ip138.com/&apos;, headers=headers,
+                         timeout=5, proxies=proxies)
+        if r.ok:
+            res = True
+    except Exception as e:
+        pass
+return res
+</code></pre><p>这里使用的测试网址是<a href="http://www.ip138.com/，当然你可以随便改，改成http://www.baidu.com" target="_blank" rel="noopener">http://www.ip138.com/，当然你可以随便改，改成http://www.baidu.com</a> 也行，需要注意的是，一定要带<a href="http://www.头" target="_blank" rel="noopener">http://www.头</a> 写完整的一个地址，这不像平时我们使用浏览器会帮我们补全。<br>检测通过之后可以保存起来了。</p>
+<h6 id="保存"><a href="#保存" class="headerlink" title="保存"></a>保存</h6><p>保存使用mysql，创建一个新数据库命名为ip。<br>ok了，接下来看python 使用peewee建立ORM操作数据库。<br>首先定义Ip model类:</p>
+<pre><code>import datetime, json
+from flask_peewee.db import Model, AutoField, CharField, DateTimeField
+
+from . import db
+
+class Ip(Model):
+    id = AutoField(primary_key=True)
+    ip = CharField(max_length=16, null=False, default=&quot;&quot;, unique=True)
+    port = CharField(max_length=5, null=False, default=&quot;&quot;)
+    address = CharField(max_length=30, default=&quot;&quot;)
+    ip_type = CharField(max_length=8)
+    create_time = DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self):
+        r = {}
+        for k in self.__data__.keys():
+            try:
+                r[k] = str(getattr(self, k))
+            except:
+                r[k] = json.dumps(getattr(self, k))
+        return str(r)
+
+    class Meta:
+        database = db
+        table_name = &quot;ip&quot;
+</code></pre><p>在初始化IP池的时候，我们顺便初始化数据库，就可以顺便建表</p>
+<pre><code>import time
+
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Process
+
+from app.models import Ip
+from app.spider.IpSpider import IpSpdier, validate_ip
+from app.util.log import *
+
+
+class IpPool(object):
+    process = None
+
+    def __init__(self, check_timeout=60*30, keep_num=150):
+        &quot;&quot;&quot;
+        初始化
+        :param check_timeout: 定期检测的时长
+        :param update_num: 需要更新的数量
+        &quot;&quot;&quot;
+        self.check_timeout = check_timeout
+        self.keep_num = keep_num
+        self.spider = IpSpdier()
+        self.executor = ThreadPoolExecutor(max_workers=10)
+
+        # 初始化数据库
+        if not Ip.table_exists():
+            Ip.create_table()
+
+    def __del__(self):
+        if self.process:
+            # 析构函数
+            self.process.terminate()
+            self.process.join()
+            INFO(&quot;IpPool子进程结束&quot;)
+
+    def dowork(self):
+        if not self.process:
+            self.process = Process(target=self.__process_task)
+            self.process.start()
+        else:
+            WARNING(&quot;子进程已启动&quot;)
+
+    def __process_task(self):
+        INFO(&quot;子进程启动&quot;)
+        while True:
+            self.check()
+            INFO(&apos;完成检测, 等待%d秒 ...&apos; % self.check_timeout)
+            time.sleep(self.check_timeout)
+
+    def check(self):
+        &quot;&quot;&quot;
+        检测ip
+        :return:
+        &quot;&quot;&quot;
+        INFO(&apos;检测ip池&apos;)
+        datas = [ip for ip in Ip.select()]
+        ip_num = len(datas)
+        INFO(&apos;需要检测%d条记录&apos; % ip_num)
+        ip_ids = []
+        for data in self.executor.map(self.deal_single_ip, datas):
+            if data != 0:
+                ip_ids.append(data)
+        print(&apos;ip_ids:&apos;, ip_ids)
+        try:
+            # 删除失败的ip
+            nrows = Ip.delete().where(Ip.id &lt;&lt; ip_ids).execute()
+        except Exception as e:
+            print(e)
+
+        blance = ip_num - nrows
+        need = self.keep_num - blance
+        INFO(&quot;完成检测, 当前ip数: %d&quot; % blance)
+        if ip_num &lt; self.keep_num:
+            INFO(&apos;ip池 余额不足 需要充值%d条&apos; % need)
+            self.spider.crawl(need)
+
+    def deal_single_ip(self, ip):
+        res = False
+        if not validate_ip(ip):
+            # try:
+            #     Ip.delete_by_id(ip.id)
+            # except Exception as e:
+            #     ERROR(e)
+            return ip.id
+        else:
+            return 0
+</code></pre><p>上面代码封装了IPPool的相关操作和属性，实现线程池定时检测和更新ip的操作。IpPool启动之后，会创建一个进程来完成定时检测并更新的操作。检测ip使用一个线程池来完成，运行10条线程完成ip池的检测。</p>
+<h5 id="Using"><a href="#Using" class="headerlink" title="Using"></a>Using</h5><p>使用同样很简单，因为IpPool基本就是一个固定进程在维护一张数据库表，所以我们启动IpPool之后需要一直运行着。那么最好的做法就是把这玩意写在一个flask api的web后台，然后在后台启动它，我们通过api进行获取和删除的操作，最后部署到服务器上就完事了。使用的时候，利用api访问就可以了。</p>
+<hr>
+<h3 id="flask-api服务器搭建"><a href="#flask-api服务器搭建" class="headerlink" title="flask api服务器搭建"></a>flask api服务器搭建</h3><ul>
+<li>flask web 开发</li>
+<li>flask + nginx + supervisor + gunicorn + gevent 搭建服务器</li>
+</ul>
+<hr>
+<h4 id="flask-web开发"><a href="#flask-web开发" class="headerlink" title="flask web开发"></a>flask web开发</h4><p><a href="http://docs.jinkan.org/docs/flask/" target="_blank" rel="noopener">flask 开发文档</a>自己看看，半天入门。<br>view的代码:   </p>
+<pre><code>import json
+from peewee import fn
+from flask import request
+from flask_json import as_json
+
+from . import api
+from .conf import *
+from ..models import Ip
+from ..util.schema import serializer_schema
+from ..util.log import *
+from ..util.PRPCrypt import PRPCrypt
+
+# 加密类
+prp = PRPCrypt(data_crypt_key)
+
+@api.route(&apos;/ip&apos;, methods=[&apos;post&apos;])
+def get():
+    &quot;&quot;&quot;获取ip&quot;&quot;&quot;
+    num = request.args.get(&apos;num&apos;, 1)
+    raw_resp = {&apos;status&apos;: -1, &apos;message&apos;: &apos;FAIL&apos;, &apos;result&apos;: &apos;&apos;}
+
+    if num == &apos;&apos;:
+        num = &apos;1&apos;
+
+    try:
+        records = Ip.select().order_by(fn.Rand()).limit(int(num))
+        raw_resp[&quot;status&quot;] = 0
+        raw_resp[&quot;message&quot;] = &quot;SUCCESS&quot;
+        raw_resp[&quot;result&quot;] = [str(record) for record in records]
+    except Exception as e:
+        raw_resp[&quot;status&quot;] = -1
+        raw_resp[&quot;message&quot;] = &quot;FAIL&quot;
+        raw_resp[&quot;result&quot;] = str(e)
+
+    return json.dumps(raw_resp)
+
+
+@api.route(&apos;/del&apos;, methods=[&apos;post&apos;])
+def delete():
+    &quot;&quot;&quot;删除一个ip&quot;&quot;&quot;
+    ip = request.args.get(&apos;ip&apos;, &apos;&apos;)
+    raw_resp = {&apos;status&apos;: -1, &apos;message&apos;: &apos;FAIL&apos;, &apos;result&apos;: &apos;&apos;}
+    if ip == &apos;&apos;:
+        print(&apos;参数为空&apos;)
+        raw_resp[&quot;result&quot;] = &apos;参数为空&apos;
+    else:
+        ips = ip.split(&apos;,&apos;)
+        try:
+            nrows = Ip.delete().where(Ip.ip &lt;&lt; ips).execute()
+            raw_resp[&quot;status&quot;] = 0
+            raw_resp[&quot;message&quot;] = &quot;SUCCESS&quot;
+            raw_resp[&quot;result&quot;] = &quot;deleted %d records.&quot; % nrows
+        except Exception as e:
+            raw_resp[&quot;status&quot;] = -1
+            raw_resp[&quot;message&quot;] = &quot;FAIL&quot;
+            raw_resp[&quot;result&quot;] = str(e)
+
+    return json.dumps(raw_resp)
+</code></pre><p>实现两个api:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">name</th>
+<th style="text-align:center">args</th>
+<th style="text-align:center">type</th>
+<th style="text-align:center">example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">ip</td>
+<td style="text-align:center">num</td>
+<td style="text-align:center">int</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:center">del</td>
+<td style="text-align:center">ip</td>
+<td style="text-align:center">str</td>
+<td style="text-align:center">“19.23.45.6,34.45.75.4”</td>
+</tr>
+</tbody>
+</table>
+<h5 id="启动IP池"><a href="#启动IP池" class="headerlink" title="启动IP池"></a>启动IP池</h5><pre><code> # 启动爬虫线程
+from app.spider import ip_pool_handle
+ip_pool_handle.dowork()
+</code></pre><h4 id="搭建nginx-spuervisor-gunicorn-gevent"><a href="#搭建nginx-spuervisor-gunicorn-gevent" class="headerlink" title="搭建nginx + spuervisor + gunicorn + gevent"></a>搭建nginx + spuervisor + gunicorn + gevent</h4><ul>
+<li>nginx: 高性能 Web 服务器+负责反向代理</li>
+<li>gunicorn: 高性能 WSGI 服务器</li>
+<li>gevent: 把 Python 同步代码变成异步协程的库</li>
+<li>supervisor: 监听 Linux 服务进程的工具</li>
+</ul>
+<p>额。。。。。是不是看起来很麻烦，其实也不麻烦，无非就是装几个程序然后写一些配置文件而已。</p>
+<p>一件一件来。<br>nginx:   </p>
+<pre><code>安装 yum install nginx -y
+启动 nginx
+重新加载 nginx -s reload
+</code></pre><p>配置文件放在在/etc/nginx/conf.d/目录下。  </p>
+<pre><code>server {
+    listen      80; # 监听80端口
+
+    root      /root/www/ippool;
+    access_log /root/www/log/access_log;
+    error_log  /root/www/log/error_log;
+
+    server_name your_server; #写你的服务器ip或者域名
+
+    # 动态请求转发到8181端口:
+    # 这里只做动态请求转发
+    location / {
+        proxy_pass       http://0.0.0.0:8181;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+</code></pre><p>supervisor:</p>
+<pre><code>安装 yum install supervisor -y
+启动 supervisord
+开启某个app spuervisorctl start your_app
+关闭某个app spuervisorctl stop your_app
+</code></pre><p>配置文件放在/etc/supervisord.d/中，默认的配置文件格式为<em>.ini，你也可以修改/etc/supervisord.conf文件中的include=”</em>.ini”为*.conf</p>
+<pre><code>[program:ippool]
+
+command     = /root/Envs/ippool/bin/gunicorn --bind 0.0.0.0:8181 --workers 3 --worker-class gevent manage:app
+directory   = /root/www/ippool
+user        = root
+startsecs   = 3
+
+autostart=true
+autorestart=true
+stopsignal=TERM
+
+redirect_stderr         = true
+stdout_logfile_maxbytes = 50MB
+stdout_logfile_backups  = 10
+stdout_logfile          = /root/www/log/ippool.log
+</code></pre><p>关于gunicorn和gevent，都是在python环境中实现的，更简单，pip安装就完了，注意python2和python3的区分就行了。<br>基本上搭建就结束了，如何你嫌每次搞来搞去麻烦，那用python 的<a href="https://fabric-chs.readthedocs.io/zh_CN/chs/tutorial.html" target="_blank" rel="noopener">fabric</a>写个自动部署的脚本一件部署完事。有问题再去看log解决嘛。<br>最后测试一下:<br><img src="/2018/08/02/代理ip池/2.jpg" alt><br>最后附上地址<a href="https://github.com/tack-shao/IpPool" target="_blank" rel="noopener">https://github.com/tack-shao/IpPool</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/02/代理ip池/" data-id="cjtzp9qxr0002ev8w98737tl4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -679,7 +1037,7 @@ heuristic += cross*0.001
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/10/11/AStar寻路算法研究，运用于agv寻路/" data-id="cjty25jhv0000vc8w4hmsb44y" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/10/11/AStar寻路算法研究，运用于agv寻路/" data-id="cjtzp9qx90000ev8wfi5gtylk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -707,7 +1065,7 @@ heuristic += cross*0.001
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
     </div>
   </div>
 
@@ -729,6 +1087,10 @@ heuristic += cross*0.001
         
           <li>
             <a href="/2018/11/01/蓝牙鼠标驱动开发总结/">蓝牙鼠标驱动开发总结</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/代理ip池/">代理ip池</a>
           </li>
         
           <li>
